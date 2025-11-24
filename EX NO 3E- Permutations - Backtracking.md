@@ -1,109 +1,79 @@
 
-
-# EX 3D Sudoku solver - Backtracking.
-## DATE : 21-09-2025
+# EX 3E Generate Permutations using Backtracking  Approach.
+## DATE: 27-09-2025
 ## AIM:
-To write a Java program to solve a Sudoku puzzle by filling the empty cells.
-
+To write a Java program to for given constraints.
+Given an array nums of distinct integers, return all the possible Permutation. You can return the answer in any order.
+Example 1:
+Input: nums = [1,2,3]
+Output: [[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
 For example:
-<img width="357" height="322" alt="image" src="https://github.com/user-attachments/assets/334b8c39-d547-4743-aca0-de92e38bdd1c" />
-
-
-
 ## Algorithm
 1. Start  
-2. Read a 9×9 Sudoku board as input, where empty cells are represented by `0`.  
-3. Define a function `isSafe(board, row, col, num)` that checks if a number `num` can be placed at position `(row, col)` without violating Sudoku rules:  
-   - The number should not already exist in the same row.  
-   - The number should not already exist in the same column.  
-   - The number should not already exist in the same 3×3 subgrid.  
-4. Define a recursive function `solveSudoku(board, row, col)` to fill the board:  
-   - If `row == 9`, all rows are filled → return `true` (solution found).  
-   - If `col == 9`, move to the next row by calling `solveSudoku(board, row + 1, 0)`.  
-   - If the current cell is already filled (`board[row][col] != 0`), move to the next column.  
-5. For an empty cell `(row, col)`:  
-   - Try placing numbers `1` to `9` one by one.  
-   - For each number, check if it is safe using `isSafe()`.  
-   - If safe, place the number and recursively call `solveSudoku(board, row, col + 1)`.  
-   - If the recursive call returns `true`, a valid solution is found → return `true`.  
-   - Otherwise, reset the cell to `0` (backtrack) and try the next number.  
-6. If no valid number can be placed, return `false` to backtrack further.  
-7. If the function returns `true`, print the solved Sudoku board.  
-8. If the function returns `false`, print "No solution exists."  
-9. End  
-  
+2. Read the input array `nums` from the user.  
+3. Initialize an empty list `ans` to store all generated permutations.  
+4. Call the recursive function `backtrack(curr, ans, nums)` where:  
+   - `curr` is a list storing the current permutation being built.  
+   - `ans` stores all valid permutations found so far.  
+5. In `backtrack()` function:  
+   - **Base case:**  
+     - If the size of `curr` equals the length of `nums`, a complete permutation is formed.  
+     - Add a **copy** of `curr` to the result list `ans` and return.  
+   - **Recursive case:**  
+     - Iterate through each element `num` in `nums`.  
+     - If `num` is already in `curr`, skip it (since each number can be used only once).  
+     - Add `num` to `curr` (choose step).  
+     - Recursively call `backtrack(curr, ans, nums)` to build the next position.  
+     - After returning, remove the last added number from `curr` (unchoose step / backtrack).  
+6. After all recursive calls complete, `ans` contains all possible permutations.  
+7. Print the list of permutations.  
+8. End  
+   
 
 ## Program:
 ```
 
-import java.util.Scanner;
+import java.util.*;
 
-public class SudokuSolver {
+public class Solution {
 
-    static boolean isSafe(int[][] board, int row, int col, int num) {
-        for (int i = 0; i < 9; i++) {
-            if (board[row][i] == num || board[i][col] == num)
-                return false;
-        }
-
-        int startRow = row - row % 3;
-        int startCol = col - col % 3;
-
-        for (int i = 0; i < 3; i++)
-            for (int j = 0; j < 3; j++)
-                if (board[startRow + i][startCol + j] == num)
-                    return false;
-
-        return true;
+    public List<List<Integer>> permute(int[] nums) {
+        List<List<Integer>> ans = new ArrayList<>();
+        backtrack(new ArrayList<>(), ans, nums);
+        return ans;
     }
 
-    static boolean solveSudoku(int[][] board, int row, int col) {
-        if (row == 9)
-            return true;
-
-        if (col == 9)
-            return solveSudoku(board, row + 1, 0);
-
-        if (board[row][col] != 0)
-            return solveSudoku(board, row, col + 1);
-
-        for (int num = 1; num <= 9; num++) {
-            if (isSafe(board, row, col, num)) {
-                board[row][col] = num;
-                if (solveSudoku(board, row, col + 1))
-                    return true;
-                board[row][col] = 0; // backtrack
-            }
+    public void backtrack(List<Integer> curr, List<List<Integer>> ans, int[] nums) {
+        // Base case: if permutation complete, add to result
+        if (curr.size() == nums.length) {
+            ans.add(new ArrayList<>(curr));
+            return;
         }
-        return false;
-    }
 
-    static void printBoard(int[][] board) {
-        for (int[] row : board) {
-            for (int val : row)
-                System.out.print(val + " ");
-            System.out.println();
+        // Try each number not already in current list
+        for (int num : nums) {
+            if (curr.contains(num)) continue; // skip used numbers
+            curr.add(num);                   // choose
+            backtrack(curr, ans, nums);      // explore
+            curr.remove(curr.size() - 1);    // unchoose (backtrack)
         }
     }
 
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        int[][] board = new int[9][9];
+        Scanner scanner = new Scanner(System.in);
+        String inputLine = scanner.nextLine().trim();
+        inputLine = inputLine.replaceAll(".*\\[|\\].*", ""); 
+        String[] parts = inputLine.split(",");
 
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-                board[i][j] = sc.nextInt();
-            }
+        int[] nums = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            nums[i] = Integer.parseInt(parts[i].trim());
         }
 
-        if (solveSudoku(board, 0, 0)) {
-            System.out.println("Solved Sudoku:");
-            printBoard(board);
-        } else {
-            System.out.println("No solution exists.");
-        }
-
-        sc.close();
+        Solution solution = new Solution();
+        List<List<Integer>> permutations = solution.permute(nums);
+        System.out.println(permutations);
+        scanner.close();
     }
 }
 
@@ -111,7 +81,7 @@ public class SudokuSolver {
 
 ## Output:
 
-<img width="1029" height="658" alt="image" src="https://github.com/user-attachments/assets/8835bd6c-b7b9-4d14-bdb9-2c30c03e7cb0" />
+<img width="1279" height="353" alt="image" src="https://github.com/user-attachments/assets/2b5ba92b-e514-4180-96f7-f10557ea6e7a" />
 
 
 ## Result:
